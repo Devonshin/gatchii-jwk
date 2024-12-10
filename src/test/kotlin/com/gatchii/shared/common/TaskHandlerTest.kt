@@ -3,6 +3,8 @@ package com.gatchii.shared.common
 import com.gatchii.domains.jwk.JwkRepository
 import com.gatchii.domains.jwk.JwkService
 import com.gatchii.domains.jwk.JwkServiceImpl
+import com.typesafe.config.ConfigFactory
+import io.ktor.server.config.HoconApplicationConfig
 import io.mockk.mockk
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -21,11 +23,19 @@ class TaskHandlerTest {
 
     lateinit var jwkRepository: JwkRepository
     lateinit var jwkService: JwkService
-
+    private val config = HoconApplicationConfig(
+        ConfigFactory.parseString(
+            """
+                jwk {
+                    count = 10
+                }
+            """
+        )
+    )
     @BeforeEach
     fun setUp() {
         jwkRepository = mockk<JwkRepository>()
-        jwkService = JwkServiceImpl(jwkRepository)
+        jwkService = JwkServiceImpl(jwkRepository, config)
         TaskLeadHandler.addTasks(RepeatableTaskLeadHandler("repeatJwk", 10) {
 
         })

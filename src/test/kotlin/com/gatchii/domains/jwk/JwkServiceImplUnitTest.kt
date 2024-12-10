@@ -2,10 +2,13 @@ package com.gatchii.domains.jwk
 
 import com.gatchii.utils.ECKeyPairHandler
 import com.github.f4b6a3.uuid.UuidCreator
+import com.typesafe.config.ConfigFactory
+import io.ktor.server.config.*
 import io.ktor.server.plugins.*
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.jose4j.jwk.PublicJsonWebKey
 import org.junit.jupiter.api.BeforeAll
 import shared.common.UnitTest
 import java.time.OffsetDateTime
@@ -16,9 +19,8 @@ import kotlin.test.Test
 
 
 /**
- * Package: test.com.gatchii.domains.jwk
- * Created: Devonshin
- * Date: 17/09/2024
+ * Package: test.com.gatchii.domains.jwk Created: Devonshin Date:
+ * 17/09/2024
  */
 
 @UnitTest
@@ -30,23 +32,35 @@ class JwkServiceImplUnitTest {
 
     companion object {
         private const val LIMIT = 10
+
         @JvmStatic
         @BeforeAll
         fun init() {
             println("init..")
-
         }
     }
+
     private val jwkModels: List<JwkModel> = List(LIMIT) {
         JwkModel(
             id = UuidCreator.getTimeOrderedEpochFast(),
-            keyId = "keyId-$it",
             privateKey = "privateKey-$it",
-            content = "content-$it",
+            publicKey = "content-$it",
             createdAt = OffsetDateTime.now(),
             deletedAt = null
         )
     }
+
+    private val jwksKeySet: Set<JwkResponse> = HashSet()
+
+    private val config = HoconApplicationConfig(
+        ConfigFactory.parseString(
+            """
+                jwk {
+                    count = 10
+                }
+            """
+        )
+    )
 
     @BeforeTest
     fun setup() {
@@ -54,10 +68,10 @@ class JwkServiceImplUnitTest {
         mockkObject(ECKeyPairHandler)
 
         mockkConstructor(JwkServiceImpl::class)
-        coEvery { anyConstructed<JwkServiceImpl>().getUsableJwks() } coAnswers { jwkModels }
+        coEvery { anyConstructed<JwkServiceImpl>().getUsableJwks() } coAnswers { jwksKeySet }
         coEvery { jwkRepository.findAllUsable(null) } coAnswers { jwkModels }
         coEvery { jwkRepository.findAllUsable(any()) } coAnswers { jwkModels }
-        jwkService = JwkServiceImpl(jwkRepository)
+        jwkService = JwkServiceImpl(jwkRepository, config)
     }
 
     @AfterTest
@@ -77,13 +91,28 @@ class JwkServiceImplUnitTest {
         return@runTest
     }
 
+    @Test
+    fun `generate jwk test`() = runTest {
+        //given
+        //when
+        val generateJwk = jwkService.generateJwk()
+        //then
+        assertThat(generateJwk).isNotNull()
+        val newPublicJwk = PublicJsonWebKey.Factory.newPublicJwk(generateJwk.publicKey)
+        assertThat(newPublicJwk.keyId).isNotBlank
+        assertThat(newPublicJwk.keyType).isNotBlank
+        assertThat(newPublicJwk.use).isNotBlank
+        assertThat(newPublicJwk.algorithm).isNotBlank
+        return@runTest
+    }
+
 
     @Test
     fun `list 10 jwk test`() = runTest {
         //given
         coEvery { jwkRepository.findAllUsable(null, any()) } coAnswers { jwkModels }
         //when
-        val listJwk = jwkService.findAllJwkForPaging(null, LIMIT)
+        val listJwk = jwkService.findJwks(null, LIMIT)
         //then
         assertThat(listJwk.size).isEqualTo(LIMIT)
         coVerify(exactly = 2) { jwkRepository.findAllUsable(null, any()) }
@@ -110,7 +139,7 @@ class JwkServiceImplUnitTest {
         //when
         var thrown = false
         try {
-            val jwk = jwkService.getJwk(id)
+            jwkService.getJwk(id)
         } catch (e: NotFoundException) {
             thrown = true
         }
@@ -162,7 +191,7 @@ class JwkServiceImplUnitTest {
         //when
         jwkService.deleteJwk(id)
         //then
-        val findAllJwkForPaging = jwkService.findAllJwkForPaging(offsetId, LIMIT)
+        val findAllJwkForPaging = jwkService.findJwks(offsetId, LIMIT)
         assertThat(findAllJwkForPaging.size).isEqualTo(LIMIT - 1)
 
         coVerify(exactly = 1) { jwkRepository.delete(id) }
@@ -174,7 +203,6 @@ class JwkServiceImplUnitTest {
     @Test
     fun `delete 1 Jwk by domain test`() = runTest {
         //given
-        val pageNo = 1
         coEvery { jwkRepository.delete(jwkModels[0]) } answers {}
         coEvery { jwkRepository.findAllUsable(offsetId, LIMIT) } answers {
             jwkModels.subList(0, 9)
@@ -185,7 +213,7 @@ class JwkServiceImplUnitTest {
         //when
         jwkService.deleteJwk(jwkModels[0])
         //then
-        val findAllJwkForPaging = jwkService.findAllJwkForPaging(offsetId, LIMIT)
+        val findAllJwkForPaging = jwkService.findJwks(offsetId, LIMIT)
         assertThat(findAllJwkForPaging.size).isEqualTo(LIMIT - 1)
 
         coVerify(exactly = 1) { jwkRepository.delete(jwkModels[0]) }

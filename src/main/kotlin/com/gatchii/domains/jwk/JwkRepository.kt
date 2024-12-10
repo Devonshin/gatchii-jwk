@@ -1,11 +1,10 @@
 package com.gatchii.domains.jwk
 
-import com.gatchii.domains.jwk.JwkTable.content
 import com.gatchii.domains.jwk.JwkTable.createdAt
 import com.gatchii.domains.jwk.JwkTable.deletedAt
 import com.gatchii.domains.jwk.JwkTable.id
-import com.gatchii.domains.jwk.JwkTable.keyId
 import com.gatchii.domains.jwk.JwkTable.privateKey
+import com.gatchii.domains.jwk.JwkTable.publicKey
 import com.gatchii.shared.exception.NotSupportMethodException
 import com.gatchii.shared.repository.ExposedCrudRepository
 import org.jetbrains.exposed.dao.id.EntityID
@@ -29,8 +28,7 @@ interface JwkRepository: ExposedCrudRepository<JwkTable, JwkModel, UUID> {
         {
             if (domain.id != null) it[id] = domain.id!!
             it[this.privateKey] = domain.privateKey
-            it[this.keyId] = domain.keyId
-            it[this.content] = domain.content
+            it[this.publicKey] = domain.publicKey
             if (domain.createdAt != null) {
                 it[this.createdAt] = domain.createdAt
             }
@@ -43,8 +41,7 @@ interface JwkRepository: ExposedCrudRepository<JwkTable, JwkModel, UUID> {
         {
             if (it.id != null) this[id] = it.id!!
             this[privateKey] = it.privateKey
-            this[keyId] = it.keyId
-            this[content] = it.content
+            this[publicKey] = it.publicKey
             if (it.createdAt != null) {
                 this[createdAt] = it.createdAt
             }
@@ -54,9 +51,8 @@ interface JwkRepository: ExposedCrudRepository<JwkTable, JwkModel, UUID> {
     override fun toDomain(row: ResultRow): JwkModel {
         return JwkModel(
             id = row[id].value,
-            keyId = row[keyId],
             privateKey = row[privateKey],
-            content = row[content],
+            publicKey = row[publicKey],
             createdAt = row[createdAt],
             deletedAt = row[deletedAt]
         )
@@ -65,7 +61,6 @@ interface JwkRepository: ExposedCrudRepository<JwkTable, JwkModel, UUID> {
     override fun updateRow(domain: JwkModel): JwkTable.(UpdateStatement) -> Unit = {
         domain.deletedAt?.let { throw NotSupportMethodException("JwkModel can't be update. $domain") }
         it[privateKey] = domain.privateKey
-        it[content] = domain.content
-        it[keyId] = domain.keyId
+        it[publicKey] = domain.publicKey
     }
 }

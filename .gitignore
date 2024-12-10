@@ -38,3 +38,4 @@ out/
 private/
 
 .DS_Store
+/logs/

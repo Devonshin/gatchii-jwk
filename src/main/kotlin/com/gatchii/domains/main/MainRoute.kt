@@ -1,5 +1,6 @@
 package com.gatchii.domains.main
 
+import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -11,6 +12,7 @@ import io.ktor.server.routing.*
 
 fun Route.mainRoute() {
     get(Regex("/?")) {
-        call.respond("Hello World! This is main page")
+        println("Hello, this is main-server ! ")
+        call.respond("Hello, this is jwk-server ! ")
     }
 }

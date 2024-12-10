@@ -7,7 +7,6 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.compression.*
-import io.ktor.server.routing.*
 import kotlin.time.Duration.Companion.seconds
 
 fun Application.configureHTTP() {
@@ -26,7 +25,5 @@ fun Application.configureHTTP() {
             host = "localhost"
             port = 6379
         }
-    }
-    routing {
     }
 }

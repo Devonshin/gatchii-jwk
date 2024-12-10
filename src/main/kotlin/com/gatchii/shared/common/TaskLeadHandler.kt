@@ -42,8 +42,8 @@ abstract class TaskLeadHandler {
 
         // Executes all tasks by verifying if the current instance is the leader.
         fun runTasks() {
-            logger.info("Run tasks...")
-            tasks.forEach {
+            logger.info("Run tasks... size = ${tasks.size}")
+            tasks.toList().forEach {
                 if (isLeader()) {
                     logger.info("Run leader task...${it.taskName()}")
                     it.doTask()
@@ -54,6 +54,7 @@ abstract class TaskLeadHandler {
         // Determines if the current instance should execute leader tasks, currently returns true (stub).
         fun isLeader(): Boolean {
             //todo leader check logic
+            logger.info("call isLeader... $this")
             return true
         }
     }

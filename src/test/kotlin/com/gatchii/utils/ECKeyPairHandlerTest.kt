@@ -1,14 +1,22 @@
 package com.gatchii.utils
 
-import io.ktor.util.*
+import com.gatchii.domains.jwk.JwkModel
+import com.github.f4b6a3.uuid.UuidCreator
+import io.ktor.util.encodeBase64
 import org.assertj.core.api.Assertions
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.jose4j.jwk.JsonWebKey
+import org.jose4j.jwk.PublicJsonWebKey
+import org.jose4j.jwk.Use
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import shared.common.UnitTest
 import java.security.KeyPair
 import java.security.PrivateKey
+import java.security.PublicKey
 import java.security.Security
+import java.time.OffsetDateTime
+import kotlin.jvm.java
 
 /**
  * Package: com.gatchii.unit.utils
@@ -79,6 +87,49 @@ class ECKeyPairHandlerTest {
         assertThrows(IllegalArgumentException::class.java) {
             ECKeyPairHandler.convertPrivateKey(invalidPemString)
         }
+    }
+
+
+    @Test
+    fun `test if convertPublicKey generates PublicKey from PEM format`() {
+        // given
+        val keyPair: KeyPair = ECKeyPairHandler.generateKeyPair()
+        val publicKeyPem = keyPair.public.encoded.encodeBase64()
+
+        // when
+        val privateKey: PublicKey = ECKeyPairHandler.convertPublicKey(publicKeyPem)
+
+        //then
+        Assertions.assertThat(privateKey)
+            .isEqualTo(keyPair.public)
+            .withFailMessage("PublicKey should not be null for valid PEM format")
+    }
+
+    @Test
+    fun `test if convertPublicKey throws exception for invalid PEM format`() {
+        // given
+        val invalidPemString = "This is an invalid PEM format"
+        // when - then
+        assertThrows(IllegalArgumentException::class.java) {
+            ECKeyPairHandler.convertPublicKey(invalidPemString)
+        }
+    }
+
+    @Test
+    fun `test ecdsa format`() {
+        val keyPair = ECKeyPairHandler.generateKeyPair()
+        val newJwk = PublicJsonWebKey.Factory.newPublicJwk(keyPair.public)
+        newJwk.privateKey = keyPair.private;
+        newJwk.use = Use.SIGNATURE;
+        newJwk.algorithm = ECKeyPairHandler.KEY_ALGORITHM
+        newJwk.keyId = UuidCreator.getTimeOrderedEpoch().toString()
+        val jwkModel = JwkModel(
+            privateKey = keyPair.private.encoded.encodeBase64(),
+            publicKey = newJwk.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY),
+            createdAt = OffsetDateTime.now()
+        )
+
+        println(jwkModel)
     }
 
 }

@@ -60,8 +60,7 @@ class JwkRepositoryImplUnitTest {
         val randomUUID = UUID.randomUUID()
         val jwkModel = JwkModel(
             privateKey = "ac-$randomUUID",
-            keyId = "keyId-$randomUUID",
-            content = "content-$randomUUID",
+            publicKey = "content-$randomUUID",
             createdAt = OffsetDateTime.now()
         )
         //when
@@ -82,8 +81,7 @@ class JwkRepositoryImplUnitTest {
             jwkCount++
             JwkModel(
                 privateKey = "ac-$randomUUID",
-                keyId = "keyId-$randomUUID",
-                content = "content-$randomUUID",
+                publicKey = "content-$randomUUID",
                 createdAt = OffsetDateTime.now()
             )
         }
@@ -120,8 +118,7 @@ class JwkRepositoryImplUnitTest {
         val jwkModel = JwkModel(
             id = UUID.fromString("0192f49f-073f-7526-b011-887aab4b1e0a"),
             privateKey = "update-ac-$randomUUID",
-            keyId = "update-keyId-$randomUUID",
-            content = "update-content-$randomUUID",
+            publicKey = "update-content-$randomUUID",
             createdAt = OffsetDateTime.now()
         )
         //when
@@ -151,8 +148,7 @@ class JwkRepositoryImplUnitTest {
         val jwkModel = JwkModel(
             id = UUID.fromString("0192f39f-073f-7526-b011-887aab4b1e0a"),
             privateKey = "update ac",
-            keyId = "keyId",
-            content = "content",
+            publicKey = "content",
             createdAt = OffsetDateTime.now()
         )
         //when

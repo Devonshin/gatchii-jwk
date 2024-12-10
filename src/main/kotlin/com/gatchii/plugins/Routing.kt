@@ -15,7 +15,6 @@ fun Application.configureRouting() {
         }
     }
     routing {
-
         route("") {
             mainRoute()
             jkwRoute()

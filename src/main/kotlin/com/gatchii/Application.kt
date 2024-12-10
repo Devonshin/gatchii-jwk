@@ -1,9 +1,6 @@
 package com.gatchii
 
-import com.gatchii.plugins.configureDatabases
-import com.gatchii.plugins.configureFrameworks
-import com.gatchii.plugins.configureRouting
-import com.gatchii.plugins.configureSecurity
+import com.gatchii.plugins.*
 import com.gatchii.shared.common.TaskLeadHandler
 import io.ktor.server.application.*
 
@@ -19,9 +16,9 @@ fun Application.module() {
     configureDatabases()
     configureFrameworks()
     configureSecurity()
-    //    configureHTTP()
-    //    configureMonitoring()
-    //    configureSerialization()
+    configureHTTP()
+    configureMonitoring()
+    configureSerialization()
     configureRouting()
     onApplicationLoaded()
 }

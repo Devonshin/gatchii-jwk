@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
 import java.util.*
 
 
@@ -56,7 +57,7 @@ class ECKeyPairHandler {
 
         fun convertPublicKey(pem: String): PublicKey {
             val keyFactory = KeyFactory.getInstance("EC")
-            val privateKeySpec = PKCS8EncodedKeySpec(Base64.getDecoder().decode(pem))
+            val privateKeySpec = X509EncodedKeySpec(Base64.getDecoder().decode(pem))
             val publicKey = keyFactory.generatePublic(privateKeySpec)
             return publicKey
         }
