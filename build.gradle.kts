@@ -63,7 +63,6 @@ dependencies {
     implementation("org.bitbucket.b_c:jose4j:0.9.6")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
-    implementation("org.mindrot:jbcrypt:$jbcryptVersion")
     implementation("com.github.f4b6a3:uuid-creator:6.0.0")
 
     testImplementation("io.ktor:ktor-server-test-host-jvm")
