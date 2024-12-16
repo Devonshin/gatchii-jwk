@@ -7,13 +7,12 @@ import kotlin.concurrent.timerTask
 
 class RepeatableTaskLeadHandler(
     private val taskName: String,
-    private val repeatInMinute: Int = Integer.MAX_VALUE,
+    private val repeatInSecond: Int = Integer.MAX_VALUE,
     private val task: () -> Unit
 ): TaskLeadHandler() {
-
     init {
-        if(repeatInMinute <= 0 && repeatInMinute > Integer.MIN_VALUE) {
-            throw Exception("Repeat in minute must be greater than 0")
+        if(repeatInSecond <= 0 && repeatInSecond > Integer.MIN_VALUE) {
+            throw Exception("Repeat second must be greater than 0")
         }
     }
     override fun taskName(): String {
@@ -21,17 +20,12 @@ class RepeatableTaskLeadHandler(
     }
 
     override fun doTask() {
-        val mills = if(repeatInMinute == Integer.MIN_VALUE) {
-            5 * 1000
-        } else {
-            repeatInMinute.toLong() * 60 * 1000
-        }
         Timer().scheduleAtFixedRate(
             timerTask {
                 task()
             },
             0L,
-            mills
+            repeatInSecond.toLong() * 1000
         )
     }
 }

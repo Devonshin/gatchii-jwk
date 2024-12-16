@@ -1,5 +1,6 @@
 package com.gatchii.domains.jwk
 
+import com.gatchii.shared.common.TaskLeadHandler
 import com.gatchii.utils.ECKeyPairHandler
 import com.github.f4b6a3.uuid.UuidCreator
 import com.typesafe.config.ConfigFactory
@@ -9,7 +10,6 @@ import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jose4j.jwk.PublicJsonWebKey
-import org.junit.jupiter.api.BeforeAll
 import shared.common.UnitTest
 import java.time.OffsetDateTime
 import java.util.*
@@ -26,32 +26,6 @@ import kotlin.test.Test
 @UnitTest
 class JwkServiceImplUnitTest {
 
-    private val offsetId = UUID.fromString("0292f39f-073f-7526-b011-887aab4b1e0a")
-    private val jwkRepository: JwkRepository = mockk<JwkRepository>()
-    private lateinit var jwkService: JwkServiceImpl
-
-    companion object {
-        private const val LIMIT = 10
-
-        @JvmStatic
-        @BeforeAll
-        fun init() {
-            println("init..")
-        }
-    }
-
-    private val jwkModels: List<JwkModel> = List(LIMIT) {
-        JwkModel(
-            id = UuidCreator.getTimeOrderedEpochFast(),
-            privateKey = "privateKey-$it",
-            publicKey = "content-$it",
-            createdAt = OffsetDateTime.now(),
-            deletedAt = null
-        )
-    }
-
-    private val jwksKeySet: Set<JwkResponse> = HashSet()
-
     private val config = HoconApplicationConfig(
         ConfigFactory.parseString(
             """
@@ -61,23 +35,38 @@ class JwkServiceImplUnitTest {
             """
         )
     )
+    private val limit = 10
+    private val offsetId = UUID.fromString("0292f39f-073f-7526-b011-887aab4b1e0a")
+    private val jwkRepository: JwkRepository = mockk<JwkRepository>()
+    private val jwkService: JwkService = JwkServiceImpl(jwkRepository, config)
+
+    private val jwkModels: List<JwkModel> = List(limit) {
+        JwkModel(
+            id = UuidCreator.getTimeOrderedEpochFast(),
+            privateKey = "privateKey-$it",
+            publicKey = "content-$it",
+            createdAt = OffsetDateTime.now(),
+            deletedAt = null
+        )
+    }
+
+    //private val jwksKeySet: JwkResponse = JwkResponse(setOf(emptyMap<String, String>()))
 
     @BeforeTest
     fun setup() {
         println("setup..")
         mockkObject(ECKeyPairHandler)
-
-        mockkConstructor(JwkServiceImpl::class)
-        coEvery { anyConstructed<JwkServiceImpl>().getUsableJwks() } coAnswers { jwksKeySet }
-        coEvery { jwkRepository.findAllUsable(null) } coAnswers { jwkModels }
-        coEvery { jwkRepository.findAllUsable(any()) } coAnswers { jwkModels }
-        jwkService = JwkServiceImpl(jwkRepository, config)
+        //mockkConstructor(JwkServiceImpl::class)
+        //coEvery { anyConstructed<JwkServiceImpl>().getUsableJwks() } coAnswers { jwksKeySet }
+        //coEvery { jwkRepository.findAllUsable(null) } coAnswers { jwkModels }
+        //coEvery { jwkRepository.findAllUsable(any()) } coAnswers { jwkModels }
     }
 
     @AfterTest
     fun teardown() {
-        unmockkConstructor(JwkServiceImpl::class)
+        //unmockkConstructor(JwkServiceImpl::class)
         unmockkObject(ECKeyPairHandler)
+        TaskLeadHandler.cleanTasks()
     }
 
     @Test
@@ -112,10 +101,10 @@ class JwkServiceImplUnitTest {
         //given
         coEvery { jwkRepository.findAllUsable(null, any()) } coAnswers { jwkModels }
         //when
-        val listJwk = jwkService.findJwks(null, LIMIT)
+        val listJwk = jwkService.findJwks(null, limit)
         //then
-        assertThat(listJwk.size).isEqualTo(LIMIT)
-        coVerify(exactly = 2) { jwkRepository.findAllUsable(null, any()) }
+        assertThat(listJwk.size).isEqualTo(limit)
+        coVerify(exactly = 1) { jwkRepository.findAllUsable(null, any()) }
     }
 
     @Test
@@ -179,24 +168,18 @@ class JwkServiceImplUnitTest {
         val id = UuidCreator.getTimeOrderedEpochFast()
         coEvery { jwkRepository.delete(id) } answers {}
         coEvery {
-            jwkRepository.findAllUsable(offsetId, LIMIT)
-        } answers {
-            jwkModels.subList(0, 9)
-        }
-        coEvery {
-            jwkRepository.findAllUsable(null, LIMIT)
+            jwkRepository.findAllUsable(offsetId, limit)
         } answers {
             jwkModels.subList(0, 9)
         }
         //when
         jwkService.deleteJwk(id)
         //then
-        val findAllJwkForPaging = jwkService.findJwks(offsetId, LIMIT)
-        assertThat(findAllJwkForPaging.size).isEqualTo(LIMIT - 1)
+        val findAllJwkForPaging = jwkService.findJwks(offsetId, limit)
+        assertThat(findAllJwkForPaging.size).isEqualTo(limit - 1)
 
         coVerify(exactly = 1) { jwkRepository.delete(id) }
-        coVerify(exactly = 1) { jwkRepository.findAllUsable(offsetId, LIMIT) }
-        coVerify(exactly = 1) { jwkRepository.findAllUsable(null, LIMIT) }
+        coVerify(exactly = 1) { jwkRepository.findAllUsable(offsetId, limit) }
     }
 
 
@@ -204,21 +187,17 @@ class JwkServiceImplUnitTest {
     fun `delete 1 Jwk by domain test`() = runTest {
         //given
         coEvery { jwkRepository.delete(jwkModels[0]) } answers {}
-        coEvery { jwkRepository.findAllUsable(offsetId, LIMIT) } answers {
-            jwkModels.subList(0, 9)
-        }
-        coEvery { jwkRepository.findAllUsable(null, LIMIT) } answers {
+        coEvery { jwkRepository.findAllUsable(offsetId, limit) } answers {
             jwkModels.subList(0, 9)
         }
         //when
         jwkService.deleteJwk(jwkModels[0])
         //then
-        val findAllJwkForPaging = jwkService.findJwks(offsetId, LIMIT)
-        assertThat(findAllJwkForPaging.size).isEqualTo(LIMIT - 1)
+        val findAllJwkForPaging = jwkService.findJwks(offsetId, limit)
+        assertThat(findAllJwkForPaging.size).isEqualTo(limit - 1)
 
         coVerify(exactly = 1) { jwkRepository.delete(jwkModels[0]) }
-        coVerify(exactly = 1) { jwkRepository.findAllUsable(offsetId, LIMIT) }
-        coVerify(exactly = 1) { jwkRepository.findAllUsable(null, LIMIT) }
+        coVerify(exactly = 1) { jwkRepository.findAllUsable(offsetId, limit) }
     }
 
 

@@ -16,7 +16,7 @@ fun Application.configureFrameworks() {
 
         /*services*/
 
-        single<JwkService>(createdAtStart = true) {
+        single<JwkService>(createdAtStart = false) {
             val config = environment.config
             val jwkConfig = config.config("jwk")
             JwkServiceImpl(get(), jwkConfig)

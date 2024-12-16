@@ -10,12 +10,12 @@ val jbcryptVersion: String by project
 val ktorVersion: String by project
 
 plugins {
-    kotlin("jvm") version "2.0.21"
-    //id("io.ktor.plugin") version "3.0.1"
-    id("io.ktor.plugin") version "2.3.13"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    kotlin("jvm") version "2.1.0"
+    id("io.ktor.plugin") version "3.0.2"
+    //id("io.ktor.plugin") version "2.3.13"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
     id("idea")
-    kotlin("plugin.power-assert") version "2.0.0"
+    //kotlin("plugin.power-assert") version "2.0.0"
 }
 
 group = "com.gatchii"
@@ -99,21 +99,21 @@ tasks.processResources {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs("src/main/resources")
-        }
-        kotlin {
-            srcDirs("src/main/kotlin")
-        }
-    }
-    test {
-        resources {
-            srcDirs("src/test/resources")
-        }
-        kotlin {
-            srcDirs("src/test")
-        }
-    }
-}
+//sourceSets {
+//    main {
+//        resources {
+//            srcDirs("src/main/resources")
+//        }
+//        kotlin {
+//            srcDirs("src/main/kotlin")
+//        }
+//    }
+//    test {
+//        resources {
+//            srcDirs("src/test/resources")
+//        }
+//        kotlin {
+//            srcDirs("src/test")
+//        }
+//    }
+//}

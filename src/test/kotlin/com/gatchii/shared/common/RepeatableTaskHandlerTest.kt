@@ -65,14 +65,14 @@ class RepeatableTaskHandlerTest {
             executionCount.incrementAndGet()
         }
 
-        val handler = RepeatableTaskLeadHandler(taskName, Integer.MIN_VALUE, task)
+        val handler = RepeatableTaskLeadHandler(taskName, 1, task)
 
         //when
         handler.doTask()
 
         //then
-        Thread.sleep(15 * 1000)
+        Thread.sleep(5 * 1000)
         println("Execution Count: ${executionCount.get()}")
-        assertTrue(executionCount.get() > 0, "Expected task to have run at least once within 3 seconds")
+        assertTrue(executionCount.get() == 6, "Expected task to have run at least once within 3 seconds")
     }
 }
