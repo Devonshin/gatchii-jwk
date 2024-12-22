@@ -9,8 +9,10 @@ import io.ktor.server.plugins.*
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.jose4j.jwk.PublicJsonWebKey
 import shared.common.UnitTest
+import java.security.Security
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.test.AfterTest
@@ -56,6 +58,9 @@ class JwkServiceImplUnitTest {
     fun setup() {
         println("setup..")
         mockkObject(ECKeyPairHandler)
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(BouncyCastleProvider())
+        }
         //mockkConstructor(JwkServiceImpl::class)
         //coEvery { anyConstructed<JwkServiceImpl>().getUsableJwks() } coAnswers { jwksKeySet }
         //coEvery { jwkRepository.findAllUsable(null) } coAnswers { jwkModels }

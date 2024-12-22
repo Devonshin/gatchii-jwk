@@ -1,5 +1,6 @@
 package com.gatchii.utils
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.nio.charset.StandardCharsets
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -16,24 +17,24 @@ import java.util.*
 class ECKeyPairHandler {
 
     init {
-        Security.addProvider(org.bouncycastle.jce.provider.BouncyCastleProvider())
+        Security.addProvider(BouncyCastleProvider())
     }
 
     companion object {
         const val KEY_ALGORITHM = "ES256"
         private const val ALGORITHM = "EC"
         private const val SIGN_ALGORITHM = "SHA256withECDSA"
-        private const val PRAM_SPEC = "secp256r1"
+        private const val PRAM_SPEC = "secp256k1"
 
         fun generateKeyPair(): KeyPair {
-            val keyGen = KeyPairGenerator.getInstance(ALGORITHM)
+            val keyGen = KeyPairGenerator.getInstance(ALGORITHM, BouncyCastleProvider.PROVIDER_NAME)
             val ecGenParameterSpec = ECGenParameterSpec(PRAM_SPEC)
             keyGen.initialize(ecGenParameterSpec, SecureRandom())
             return keyGen.generateKeyPair()
         }
 
         fun sign(message: String, privateKey: PrivateKey): String {
-            Signature.getInstance(SIGN_ALGORITHM).apply {
+            Signature.getInstance(SIGN_ALGORITHM, BouncyCastleProvider.PROVIDER_NAME).apply {
                 initSign(privateKey)
                 update(message.toByteArray(StandardCharsets.UTF_8))
                 return Base64.getUrlEncoder().encodeToString(sign())
@@ -41,7 +42,7 @@ class ECKeyPairHandler {
         }
 
         fun verify(message: String, publicKey: PublicKey, signature: String): Boolean {
-            Signature.getInstance(SIGN_ALGORITHM).apply {
+            Signature.getInstance(SIGN_ALGORITHM, BouncyCastleProvider.PROVIDER_NAME).apply {
                 initVerify(publicKey)
                 update(message.toByteArray(StandardCharsets.UTF_8))
                 return verify(Base64.getUrlDecoder().decode(signature))

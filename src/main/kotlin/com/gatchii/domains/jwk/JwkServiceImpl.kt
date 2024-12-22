@@ -70,11 +70,12 @@ class JwkServiceImpl(
         val now = OffsetDateTime.now()
         val keyPair = ECKeyPairHandler.generateKeyPair()
         val newPublicJwk = newPublicJwk(keyPair.public)
-        newPublicJwk.privateKey = keyPair.private;
-        newPublicJwk.use = Use.SIGNATURE;
+        newPublicJwk.privateKey = keyPair.private
+        newPublicJwk.use = Use.SIGNATURE
         newPublicJwk.algorithm = ECKeyPairHandler.KEY_ALGORITHM
         newPublicJwk.keyId = UuidCreator.getTimeOrderedEpoch().toString()
         return JwkModel(
+            id = UUID.fromString(newPublicJwk.keyId),
             privateKey = keyPair.private.encoded.encodeBase64(),
             publicKey = newPublicJwk.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY),
             createdAt = now
@@ -91,14 +92,17 @@ class JwkServiceImpl(
         return jwkRepository.batchCreate(jwks)
     }
 
+    //todo 캐싱
     override suspend fun findJwks(offsetId: UUID?, limit: Int): List<JwkModel> {
         return jwkRepository.findAllUsable(offsetId, limit)
     }
 
+    //todo 캐싱
     override suspend fun getJwk(id: UUID): JwkModel {
         return jwkRepository.read(id) ?: throw NotFoundException()
     }
 
+    //todo 캐싱
     override suspend fun findJwk(id: UUID): JwkModel? {
         return jwkRepository.read(id)
     }

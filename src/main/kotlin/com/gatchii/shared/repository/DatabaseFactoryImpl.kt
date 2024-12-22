@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.util.IsolationLevel
 import org.jetbrains.exposed.sql.Database
+import javax.xml.crypto.Data
 
 /**
  * Package: com.gatchii.shared.repository
@@ -14,12 +15,15 @@ import org.jetbrains.exposed.sql.Database
 
 class DatabaseFactoryImpl(databaseConfig: DatabaseConfig) : DatabaseFactory {
     private val config: DatabaseConfig = databaseConfig
+    private lateinit var database: Database
     override fun connect() {
-        Database.connect(dataSource())
+        database = Database.connect(dataSource())
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        if (::database.isInitialized) {
+            database.connector().close()
+        }
     }
 
     override fun dataSource(): HikariDataSource {

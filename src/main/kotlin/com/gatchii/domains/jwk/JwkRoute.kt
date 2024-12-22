@@ -11,8 +11,13 @@ import org.koin.ktor.ext.inject
 fun Route.jkwRoute() {
 
     val jwkService: JwkService by inject<JwkService>()
+
     get("/.well-known/jwks.json") {
         call.respond(HttpStatusCode.OK, jwkService.getUsableJwks())
+    }
+
+    get("/next") {
+        call.respond(HttpStatusCode.OK, jwkService.getNextJwk())
     }
 
 }
