@@ -1,7 +1,7 @@
 package com.gatchii
 
+import com.gatchii.common.tasks.TaskLeadHandler
 import com.gatchii.plugins.*
-import com.gatchii.shared.common.TaskLeadHandler
 import io.ktor.server.application.*
 
 fun main(args: Array<String>) {
@@ -13,12 +13,18 @@ fun onApplicationLoaded() {
 }
 
 fun Application.module() {
+    val env = environment.config.propertyOrNull("ktor.environment")?.getString()
+    println("Application started in $env environment")
     configureDatabases()
     configureFrameworks()
-    configureSecurity()
-    configureHTTP()
+    configureStatusPages()
+    //configureHTTP()
+    if (env != "test") { //테스트 환경에서는 route에 주입되는 서비스를 분기하기 위해
+        println("Configure routing...")
+        configureSecurity()
+        configureRouting()
+    }
     configureMonitoring()
     configureSerialization()
-    configureRouting()
     onApplicationLoaded()
 }

@@ -6,19 +6,16 @@ val exposedVersion: String by project
 val h2Version: String by project
 val postgresVersion: String by project
 val hikaricpVersion: String by project
-//val jbcryptVersion: String by project
-//val ktorVersion: String by project
 
 plugins {
     kotlin("jvm") version "2.1.0"
-    id("io.ktor.plugin") version "3.0.2"
-    //id("io.ktor.plugin") version "2.3.13"
+    id("io.ktor.plugin") version "3.1.0"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
     id("idea")
     kotlin("plugin.power-assert") version "2.0.0"
 }
 
-group = "com.gatchii.jwk"
+group = "com.gatchii"
 version = "0.0.1"
 
 application {
@@ -29,14 +26,25 @@ application {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/Devonshin/gatchii-common-util")
+        //credentials {
+        //    username = System.getenv("GITHUB_USERNAME") ?: "your-github-username"
+        //    password = System.getenv("GITHUB_TOKEN") ?: "your-personal-access-token"
+        //}
+    }
+
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("io.ktor:ktor-server-core-jvm")
+    implementation("io.ktor:ktor-server-auto-head-response-jvm")
+    implementation("io.ktor:ktor-server-auth-jwt-jvm:")
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-status-pages-jvm")
     implementation("io.ktor:ktor-server-caching-headers-jvm")
+    implementation("io.ktor:ktor-server-default-headers-jvm")
     implementation("io.ktor:ktor-server-compression-jvm")
     implementation("com.ucasoft.ktor:ktor-simple-cache-jvm:0.4.3")
     implementation("com.ucasoft.ktor:ktor-simple-redis-cache-jvm:0.4.3")
@@ -56,7 +64,6 @@ dependencies {
     //implementation("io.ktor:ktor-server-routing-jvm:$ktorVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("io.ktor:ktor-server-config-yaml")
     // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on
     implementation("org.bouncycastle:bcprov-jdk18on:1.79")
     // https://mvnrepository.com/artifact/org.bitbucket.b_c/jose4j
@@ -64,6 +71,9 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("com.github.f4b6a3:uuid-creator:6.0.0")
+    implementation("com.nimbusds:nimbus-jose-jwt:9.45")
+
+    implementation("com.gatchii:gatchii-common-util:0.0.8")
 
     testImplementation("io.ktor:ktor-server-test-host-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")

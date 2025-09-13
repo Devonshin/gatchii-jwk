@@ -6,8 +6,8 @@
 			<pattern>${PATTERN}</pattern>
 		</encoder>
 	</appender>
-	<appender name="InfoFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${FILE_PATH}/info.log</file>
+	<appender name="logFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${FILE_PATH}/log.log</file>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
 			<pattern>${PATTERN}</pattern>
 			<charset>UTF-8</charset>
@@ -23,6 +23,7 @@
 	</appender>
 	<root level="debug">
 		<appender-ref ref="STDOUT"/>
+		<appender-ref ref="logFile"/>
 	</root>
 	<logger name="org.eclipse.jetty" level="INFO"/>
 	<logger name="io.netty" level="INFO"/>

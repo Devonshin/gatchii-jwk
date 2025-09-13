@@ -1,6 +1,7 @@
 package com.gatchii.utils
 
-import com.gatchii.domains.jwk.JwkModel
+import com.gatchii.common.utils.ECKeyPairHandler
+import com.gatchii.domain.jwk.JwkModel
 import com.github.f4b6a3.uuid.UuidCreator
 import io.ktor.util.encodeBase64
 import org.assertj.core.api.Assertions
@@ -109,6 +110,7 @@ class ECKeyPairHandlerTest {
     fun `test if convertPublicKey throws exception for invalid PEM format`() {
         // given
         val invalidPemString = "This is an invalid PEM format"
+
         // when - then
         assertThrows(IllegalArgumentException::class.java) {
             ECKeyPairHandler.convertPublicKey(invalidPemString)
@@ -121,7 +123,7 @@ class ECKeyPairHandlerTest {
         val newJwk = PublicJsonWebKey.Factory.newPublicJwk(keyPair.public)
         newJwk.privateKey = keyPair.private;
         newJwk.use = Use.SIGNATURE;
-        newJwk.algorithm = ECKeyPairHandler.KEY_ALGORITHM
+        newJwk.algorithm = ECKeyPairHandler.SIGN_ALGORITHM
         newJwk.keyId = UuidCreator.getTimeOrderedEpoch().toString()
         val jwkModel = JwkModel(
             privateKey = keyPair.private.encoded.encodeBase64(),

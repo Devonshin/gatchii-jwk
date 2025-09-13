@@ -1,23 +1,22 @@
 package com.gatchii.plugins
 
-import com.gatchii.domains.jwk.JwkTable
 import io.ktor.server.application.*
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.transactions.transaction
+import io.ktor.server.auth.*
+import io.ktor.util.logging.*
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.security.Security
+
+private val logger: Logger = KtorSimpleLogger("com.gatchii.plugins.Security")
 
 fun Application.configureSecurity() {
-    initData(this)
-}
 
-private fun initData(app: Application) {
-    transaction {
-        addLogger(StdOutSqlLogger)
-        SchemaUtils.create(
-            JwkTable
-        )
-        SchemaUtils.createMissingTablesAndColumns(JwkTable)
+    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+        Security.addProvider(BouncyCastleProvider())
     }
+    // Please read the jwt property from the config file if you are using EngineMain
+    val env = environment.config
 
+    install(Authentication) {
+    }
+    println("Security installed")
 }

@@ -1,7 +1,7 @@
 package com.gatchii.plugins
 
-import com.gatchii.domains.jwk.JwkTable
-import com.gatchii.shared.repository.DatabaseFactoryImpl
+import com.gatchii.common.repository.DatabaseFactoryImpl
+import com.gatchii.domain.jwk.JwkTable
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -25,6 +25,7 @@ fun Application.configureDatabases() {
     )
     databaseFactory.connect()
     initData()
+    println("Database connected")
 }
 
 //fun Application.configureH2() {
@@ -48,7 +49,7 @@ private fun initData() {
 }
 
 val tables = arrayOf(
-    JwkTable,
+    JwkTable
 )
 
 data class DatabaseConfig(
