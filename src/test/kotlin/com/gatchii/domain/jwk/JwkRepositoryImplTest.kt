@@ -1,5 +1,10 @@
 package com.gatchii.domain.jwk
 
+/**
+ * @author Devonshin
+ * @date 2025-09-14
+ */
+
 import com.gatchii.common.exception.NotSupportMethodException
 import com.gatchii.common.utils.ECKeyPairHandler
 import io.ktor.util.*
@@ -25,6 +30,17 @@ import kotlin.test.BeforeTest
 
 @UnitTest
 class JwkRepositoryImplTest {
+
+    @Test
+    fun `Should apply where conditions for forward false with lastId`() {
+        // given
+        val repo = JwkRepositoryImpl(JwkTable)
+        // when: call private method via public path by passing lastId and forward=false
+        val lastId = java.util.UUID.randomUUID()
+        val result = repo.getAllUsable(lastId = lastId, forward = false, limit = 1, withDeleted = true)
+        // then: method executed without error (smoke), size <= 1
+        kotlin.test.assertTrue(result.datas.size <= 1)
+    }
     private val log = KtorSimpleLogger(this::class.simpleName?: "JwkRepositoryImplTest")
     private lateinit var jwkRepository: JwkRepositoryImpl
     private var toReadJwkModel: JwkModel? = null

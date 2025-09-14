@@ -39,3 +39,11 @@ private/
 
 .DS_Store
 /logs/
+.claude
+local-doc
+*.md
+!CLAUDE.md
+!README.md
+!CHANGELOG.md
+htmlReport
+.taskmaster

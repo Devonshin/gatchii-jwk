@@ -23,6 +23,19 @@ import kotlinx.serialization.json.Json
 class JwkRouteTest {
 
     @Test
+    @DisplayName("Should return empty keys when no active jwks")
+    fun should_return_empty_keys_when_no_active_jwks() = testApplication {
+        application {
+            routing { route("/") { jwkRoute(EmptyJwkService()) } }
+        }
+        val res = client.get("/.well-known/jwks.json")
+        assertEquals(HttpStatusCode.OK, res.status)
+        val body = res.bodyAsText()
+        val dto = Json { ignoreUnknownKeys = true }.decodeFromString(JwkResponse.serializer(), body)
+        assertTrue(dto.keys.isEmpty())
+    }
+
+    @Test
     @DisplayName("Should return 200 and JSON when GET /.well-known/gatchii-jwks.json")
     fun should_return_200_and_json_when_get_well_known_jwks() = testApplication {
         application {
@@ -35,11 +48,11 @@ class JwkRouteTest {
             }
         }
 
-        val res = client.get("/.well-known/gatchii-jwks.json")
+        val res = client.get("/.well-known/jwks.json")
         assertEquals(HttpStatusCode.OK, res.status, "HTTP 200을 기대합니다")
 
         val ct = res.headers[HttpHeaders.ContentType] ?: ""
-        assertTrue(ct.lowercase().contains("application/json"), "Content-Type은 application/json 이어야 합니다")
+        assertTrue(ct.lowercase().startsWith("application/json"), "Content-Type은 application/json 이어야 합니다")
 
         val body = res.bodyAsText()
         assertTrue(body.isNotBlank(), "본문은 비어있지 않아야 합니다")
@@ -53,6 +66,21 @@ class JwkRouteTest {
         // 표준 JWKS 필드 존재 여부(최소 한 개) 확인
         assertTrue(first.containsKey("kty"), "kty 필드가 있어야 합니다")
     }
+}
+
+private class EmptyJwkService : JwkService {
+    override suspend fun initializeJwk() {}
+    override suspend fun getRandomJwk(): JwkModel = throw NotImplementedError("not needed")
+    override suspend fun findJwk(id: java.util.UUID): JwkModel = throw NotImplementedError("not needed")
+    override suspend fun convertAlgorithm(provider: ECDSAKeyProvider): Algorithm = throw NotImplementedError("not needed")
+    override suspend fun getProvider(jwk: JwkModel): ECDSAKeyProvider = throw NotImplementedError("not needed")
+    override suspend fun findAllJwk(): List<Map<String, String>> = emptyList()
+    override suspend fun deleteJwk(id: java.util.UUID) {}
+    override suspend fun deleteJwks(jwks: List<JwkModel>) {}
+    override suspend fun createJwk(): JwkModel = throw NotImplementedError("not needed")
+    override suspend fun taskProcessing() {}
+    override suspend fun createJwks(size: Int): List<JwkModel> = emptyList()
+    override suspend fun findAllUsableJwk(): List<JwkModel> = emptyList()
 }
 
 private class FakeJwkService : JwkService {
