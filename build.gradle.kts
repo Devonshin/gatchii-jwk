@@ -92,6 +92,8 @@ tasks.test {
     useJUnitPlatform()
     // 전역 상태(JwkHandler 등)를 사용하는 테스트들 간 간섭 방지를 위해 병렬 포크 비활성화
     maxParallelForks = 1
+    // 테스트 전역에서 Ktor 환경을 test로 강제하여 서비스 초기화 부작용 방지
+    systemProperty("ktor.environment", "test")
     finalizedBy(tasks.named("jacocoTestReport"))
 }
 

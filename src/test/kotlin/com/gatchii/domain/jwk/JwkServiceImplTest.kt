@@ -50,8 +50,12 @@ class JwkServiceImplTest {
 
     @BeforeTest
     fun beforeTestSetUp() {
-        JwkHandler.clearAll()
-        jwkService = JwkServiceImpl(jwkRepository) { task: () -> Unit ->
+    JwkHandler.clearAll()
+
+    // initializeJwk()가 호출되더라도 안전하게 기본 스텁을 제공
+    coEvery { jwkRepository.getAllUsable(any(), any(), any(), any()) } returns ResultData(emptyList(), false)
+
+    jwkService = JwkServiceImpl(jwkRepository) { task: () -> Unit ->
             RoutineTaskHandler(
                 taskName = taskName,
                 scheduleExpression = RoutineScheduleExpression(),

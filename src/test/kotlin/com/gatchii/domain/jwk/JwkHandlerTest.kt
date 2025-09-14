@@ -177,6 +177,7 @@ class JwkHandlerTest {
         val randomJwk = JwkHandler.getRandomActiveJwk()
 
         // then
+        Assertions.assertTrue(randomJwk.isPresent, "활성 JWK가 1개 있으므로 Optional은 비어 있지 않아야 합니다")
         Assertions.assertEquals(jwk, randomJwk.get())
     }
 
@@ -199,7 +200,9 @@ class JwkHandlerTest {
         JwkHandler.addJwk(jwk2)
 
         // when
-        val randomJwk = JwkHandler.getRandomActiveJwk().get()
+        val opt = JwkHandler.getRandomActiveJwk()
+        Assertions.assertTrue(opt.isPresent, "활성 JWK가 존재해야 합니다")
+        val randomJwk = opt.get()
         logger.info("jwk1: $jwk1")
         logger.info("jwk2: $jwk2")
         logger.info("randomJwk: $randomJwk")

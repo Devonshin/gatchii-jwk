@@ -26,7 +26,7 @@ class JwkRouteTest {
     @DisplayName("Should return empty keys when no active jwks")
     fun should_return_empty_keys_when_no_active_jwks() = testApplication {
         application {
-            routing { route("/") { jwkRoute(EmptyJwkService()) } }
+            routing { jwkRoute(EmptyJwkService()) }
         }
         val res = client.get("/.well-known/jwks.json")
         assertEquals(HttpStatusCode.OK, res.status)
@@ -36,15 +36,12 @@ class JwkRouteTest {
     }
 
     @Test
-    @DisplayName("Should return 200 and JSON when GET /.well-known/gatchii-jwks.json")
+    @DisplayName("Should return 200 and JSON when GET /.well-known/jwks.json")
     fun should_return_200_and_json_when_get_well_known_jwks() = testApplication {
         application {
             routing {
-                // Production에서는 configureRouting() 내부에서 route("/") { jwkRoute(get()) } 형태로 주입됩니다.
                 // 테스트에서는 DI를 우회하기 위해 Fake 서비스를 직접 주입합니다.
-                route("/") {
-                    jwkRoute(FakeJwkService())
-                }
+                jwkRoute(FakeJwkService())
             }
         }
 
