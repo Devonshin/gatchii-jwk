@@ -1,3 +1,6 @@
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 val mockkVersion: String by project
 val kotlinVersion: String by project
 val logbackVersion: String by project
@@ -13,6 +16,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
     id("idea")
     kotlin("plugin.power-assert") version "2.0.0"
+    id("jacoco")
 }
 
 group = "com.gatchii"
@@ -28,19 +32,19 @@ repositories {
     mavenCentral()
     maven {
         url = uri("https://maven.pkg.github.com/Devonshin/gatchii-common-util")
-        //credentials {
-        //    username = System.getenv("GITHUB_USERNAME") ?: "your-github-username"
-        //    password = System.getenv("GITHUB_TOKEN") ?: "your-personal-access-token"
-        //}
+        credentials {
+            // 보안: 우선 환경변수 사용, 없으면 로컬 ~/.gradle/gradle.properties의 gpr.user/gpr.key 참조
+            username = System.getenv("GITHUB_USERNAME") ?: (findProperty("gpr.user") as String?)
+            password = System.getenv("GITHUB_TOKEN") ?: (findProperty("gpr.key") as String?)
+        }
     }
-
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-auto-head-response-jvm")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:")
+    implementation("io.ktor:ktor-server-auth-jwt-jvm")
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-status-pages-jvm")
     implementation("io.ktor:ktor-server-caching-headers-jvm")
@@ -86,6 +90,52 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // 전역 상태(JwkHandler 등)를 사용하는 테스트들 간 간섭 방지를 위해 병렬 포크 비활성화
+    maxParallelForks = 1
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+// JaCoCo reporting
+tasks.named<JacocoReport>("jacocoTestReport") {
+    // 테스트 보고서에서 인프라/부트스트랩 플러그인 모듈은 제외 (전용 통합테스트에서 커버)
+    // 앱 핵심 도메인/서비스 위주 커버리지 계측을 위해 필터링
+    classDirectories.setFrom(
+        files(classDirectories.files.map { dir ->
+            fileTree(dir) {
+                exclude(
+                    "com/gatchii/plugins/**",
+                    "com/gatchii/Application*"
+                )
+            }
+        })
+    )
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+// JaCoCo coverage verification (manual execution, not wired to check)
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    // 검증에서도 동일한 제외 규칙 적용
+    classDirectories.setFrom(
+        files(classDirectories.files.map { dir ->
+            fileTree(dir) {
+                exclude(
+                    "com/gatchii/plugins/**",
+                    "com/gatchii/Application*"
+                )
+            }
+        })
+    )
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.75".toBigDecimal()
+            }
+        }
+    }
 }
 
 tasks.register("unitTest", Test::class) {
